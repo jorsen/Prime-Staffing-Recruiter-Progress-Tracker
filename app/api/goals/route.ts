@@ -49,6 +49,20 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Period end must be after period start" }, { status: 400 })
     }
 
+    const existingActiveGoal = await prisma.goal.findFirst({
+      where: {
+        recruiterId: session.user.id,
+        deletedAt: null,
+        periodEnd: { gte: new Date() },
+      },
+    })
+    if (existingActiveGoal) {
+      return NextResponse.json(
+        { error: "You already have an active goal. Wait for it to end or contact your admin." },
+        { status: 409 }
+      )
+    }
+
     const goal = await prisma.goal.create({
       data: {
         recruiterId: session.user.id,
