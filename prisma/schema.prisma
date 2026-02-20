@@ -1,0 +1,94 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../app/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  RECRUITER
+  ADMIN
+}
+
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum AuditAction {
+  COMMISSION_CREATED
+  COMMISSION_DELETED
+  GOAL_CREATED
+  USER_STATUS_CHANGED
+}
+
+model User {
+  id             String     @id @default(cuid())
+  email          String     @unique
+  passwordHash   String
+  firstName      String
+  lastName       String
+  role           Role       @default(RECRUITER)
+  commissionRate Decimal?   @db.Decimal(5, 2)
+  status         UserStatus @default(ACTIVE)
+  deletedAt      DateTime?
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+
+  goals             Goal[]
+  commissions       Commission[] @relation("RecruiterCommissions")
+  commissionsLogged Commission[] @relation("LoggedByCommissions")
+  auditLogsActor    AuditLog[]
+
+  @@index([email])
+}
+
+model Goal {
+  id          String    @id @default(cuid())
+  recruiterId String
+  amount      Decimal   @db.Decimal(10, 2)
+  periodStart DateTime
+  periodEnd   DateTime
+  deletedAt   DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  recruiter User @relation(fields: [recruiterId], references: [id])
+
+  @@index([recruiterId])
+}
+
+model Commission {
+  id          String    @id @default(cuid())
+  recruiterId String
+  amount      Decimal   @db.Decimal(10, 2)
+  loggedById  String
+  notes       String?
+  loggedDate  DateTime
+  deletedAt   DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  recruiter User @relation("RecruiterCommissions", fields: [recruiterId], references: [id])
+  loggedBy  User @relation("LoggedByCommissions", fields: [loggedById], references: [id])
+
+  @@index([recruiterId])
+  @@index([loggedDate])
+}
+
+model AuditLog {
+  id         String      @id @default(cuid())
+  actorId    String
+  action     AuditAction
+  entityType String
+  entityId   String
+  metadata   Json?
+  createdAt  DateTime    @default(now())
+
+  actor User @relation(fields: [actorId], references: [id])
+
+  @@index([actorId])
+  @@index([entityType, entityId])
+}
