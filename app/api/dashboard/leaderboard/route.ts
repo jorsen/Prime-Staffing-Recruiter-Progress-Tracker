@@ -51,7 +51,8 @@ export async function GET(request: Request) {
 
   const leaderboard = users.map((user) => {
     const latestGoal = user.goals[0] ?? null
-    const totalEarned = user.commissions.reduce((sum, c) => sum + Number(c.amount), 0)
+    const rate = user.commissionRate != null ? Number(user.commissionRate) : 100
+    const totalEarned = user.commissions.reduce((sum, c) => sum + Number(c.amount) * (rate / 100), 0)
     const goalAmount = latestGoal ? Number(latestGoal.amount) : 0
     const remaining = Math.max(0, goalAmount - totalEarned)
     const progressPct = goalAmount > 0 ? Math.min(100, (totalEarned / goalAmount) * 100) : 0

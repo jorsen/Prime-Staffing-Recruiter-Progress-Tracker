@@ -10,13 +10,21 @@ export async function GET(request: Request) {
   const { searchParams } = new URL(request.url)
   const goalId = searchParams.get("goalId")
 
-  const goals = await prisma.goal.findMany({
-    where: { recruiterId, deletedAt: null },
-    orderBy: { createdAt: "desc" },
-  })
+  const [goals, recruiter] = await Promise.all([
+    prisma.goal.findMany({
+      where: { recruiterId, deletedAt: null },
+      orderBy: { createdAt: "desc" },
+    }),
+    prisma.user.findUnique({
+      where: { id: recruiterId },
+      select: { commissionRate: true },
+    }),
+  ])
+
+  const commissionRate = recruiter?.commissionRate != null ? Number(recruiter.commissionRate) : 100
 
   if (goals.length === 0) {
-    return NextResponse.json({ hasGoal: false, goals: [], activeGoal: null, stats: null, commissions: [] })
+    return NextResponse.json({ hasGoal: false, goals: [], activeGoal: null, stats: null, commissions: [], commissionRate })
   }
 
   const activeGoal = goalId ? (goals.find((g) => g.id === goalId) ?? goals[0]) : goals[0]
@@ -36,7 +44,7 @@ export async function GET(request: Request) {
     orderBy: { loggedDate: "desc" },
   })
 
-  const totalEarned = commissions.reduce((sum, c) => sum + Number(c.amount), 0)
+  const totalEarned = commissions.reduce((sum, c) => sum + Number(c.amount) * (commissionRate / 100), 0)
   const goalAmount = Number(activeGoal.amount)
   const remaining = Math.max(0, goalAmount - totalEarned)
   const progressPct = goalAmount > 0 ? Math.min(100, (totalEarned / goalAmount) * 100) : 0
@@ -57,5 +65,6 @@ export async function GET(request: Request) {
       daysLeft,
     },
     commissions,
+    commissionRate,
   })
 }

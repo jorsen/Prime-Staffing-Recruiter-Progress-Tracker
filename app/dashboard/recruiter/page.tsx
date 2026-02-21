@@ -47,6 +47,7 @@ interface DashboardData {
   activeGoal: Goal | null
   stats: Stats | null
   commissions: Commission[]
+  commissionRate: number
 }
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -55,12 +56,15 @@ const usd = (n: number) =>
   new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(n)
 
 const shortDate = (s: string) =>
-  new Date(s).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })
+  new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric", year: "numeric", timeZone: "UTC" }).format(new Date(s))
+
+const shortDateTime = (s: string) =>
+  new Date(s).toLocaleString("en-US", { month: "short", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit", timeZone: "Asia/Manila" })
 
 function groupByMonth(commissions: Commission[]) {
   const map: Record<string, number> = {}
   for (const c of commissions) {
-    const key = new Date(c.loggedDate).toLocaleDateString("en-US", { month: "short", year: "2-digit" })
+    const key = new Intl.DateTimeFormat("en-US", { month: "short", year: "2-digit", timeZone: "UTC" }).format(new Date(c.loggedDate))
     map[key] = (map[key] ?? 0) + Number(c.amount)
   }
   return Object.entries(map)
@@ -117,7 +121,7 @@ function SetGoalForm({ onSuccess }: { onSuccess: () => void }) {
           min="1"
           step="0.01"
           placeholder="50000"
-          className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full bg-white border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
         />
         {errors.amount && <p className="text-red-500 text-xs mt-1">{errors.amount.message}</p>}
       </div>
@@ -127,7 +131,7 @@ function SetGoalForm({ onSuccess }: { onSuccess: () => void }) {
           <input
             {...register("periodStart")}
             type="date"
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full bg-white border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
           />
           {errors.periodStart && <p className="text-red-500 text-xs mt-1">{errors.periodStart.message}</p>}
         </div>
@@ -136,7 +140,7 @@ function SetGoalForm({ onSuccess }: { onSuccess: () => void }) {
           <input
             {...register("periodEnd")}
             type="date"
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full bg-white border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
           />
           {errors.periodEnd && <p className="text-red-500 text-xs mt-1">{errors.periodEnd.message}</p>}
         </div>
@@ -218,7 +222,7 @@ export default function RecruiterDashboard() {
     )
   }
 
-  const { hasGoal, goals, activeGoal, stats, commissions } = data!
+  const { hasGoal, goals, activeGoal, stats, commissions, commissionRate } = data!
   const chartData = commissions ? groupByMonth(commissions) : []
 
   return (
@@ -238,7 +242,7 @@ export default function RecruiterDashboard() {
             <select
               value={selectedGoalId ?? goals[0]?.id}
               onChange={(e) => setSelectedGoalId(e.target.value)}
-              className="border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="bg-white border border-gray-300 rounded-lg px-3 py-1.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
             >
               {goals.map((g) => (
                 <option key={g.id} value={g.id}>
@@ -285,6 +289,7 @@ export default function RecruiterDashboard() {
             <StatCard
               label="Earned"
               value={usd(stats.totalEarned)}
+              sub={`at ${commissionRate}% commission`}
               accent="text-green-600"
             />
             <StatCard
@@ -373,7 +378,7 @@ export default function RecruiterDashboard() {
                   <tbody className="divide-y divide-gray-100">
                     {commissions.map((c) => (
                       <tr key={c.id} className="hover:bg-gray-50 transition-colors">
-                        <td className="px-5 py-3 text-gray-700">{shortDate(c.loggedDate)}</td>
+                        <td className="px-5 py-3 text-gray-700 whitespace-nowrap">{shortDate(c.loggedDate)}</td>
                         <td className="px-5 py-3 text-right font-medium text-green-600">{usd(Number(c.amount))}</td>
                         <td className="px-5 py-3 text-gray-500">{c.notes ?? "—"}</td>
                         <td className="px-5 py-3 text-gray-500">

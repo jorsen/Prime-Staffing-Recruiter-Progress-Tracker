@@ -30,6 +30,7 @@ const shortDateTime = (s: string) =>
     year: "numeric",
     hour: "numeric",
     minute: "2-digit",
+    timeZone: "Asia/Manila",
   })
 
 const ACTION_LABELS: Record<AuditAction, string> = {
@@ -46,15 +47,24 @@ const ACTION_STYLES: Record<AuditAction, string> = {
   USER_STATUS_CHANGED: "bg-yellow-100 text-yellow-700",
 }
 
+const STATUS_LABELS: Record<string, string> = {
+  ACTIVE: "Active",
+  INACTIVE: "Inactive",
+}
+
 function MetadataCell({ metadata }: { metadata: Record<string, unknown> | null }) {
   if (!metadata) return <span className="text-gray-300">—</span>
 
   const parts: string[] = []
   if (metadata.amount != null) parts.push(`$${Number(metadata.amount).toLocaleString()}`)
-  if (metadata.recruiterId) parts.push(`Recruiter: ${String(metadata.recruiterId).slice(0, 8)}…`)
-  if (metadata.status) parts.push(`→ ${String(metadata.status)}`)
+  if (metadata.recruiterName) parts.push(`for ${String(metadata.recruiterName)}`)
+  if (metadata.oldStatus != null && metadata.newStatus != null) {
+    const from = STATUS_LABELS[String(metadata.oldStatus)] ?? String(metadata.oldStatus)
+    const to = STATUS_LABELS[String(metadata.newStatus)] ?? String(metadata.newStatus)
+    parts.push(`${from} → ${to}`)
+  }
 
-  return <span className="text-gray-500 text-xs">{parts.join(" · ") || JSON.stringify(metadata)}</span>
+  return <span className="text-gray-500 text-xs">{parts.join(" · ") || "—"}</span>
 }
 
 // ─── Main Page ────────────────────────────────────────────────────────────────
@@ -89,7 +99,7 @@ export default function AuditLogsPage() {
         <select
           value={actionFilter}
           onChange={(e) => setActionFilter(e.target.value)}
-          className="border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="bg-white border border-gray-300 rounded-lg px-3 py-1.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
         >
           {ACTION_OPTIONS.map((o) => (
             <option key={o.value} value={o.value}>{o.label}</option>
@@ -114,6 +124,7 @@ export default function AuditLogsPage() {
                   <th className="text-left px-5 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">Actor</th>
                   <th className="text-left px-5 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">Action</th>
                   <th className="text-left px-5 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">Entity</th>
+                  <th className="text-left px-5 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">Comm. Rate</th>
                   <th className="text-left px-5 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">Details</th>
                 </tr>
               </thead>
@@ -138,6 +149,11 @@ export default function AuditLogsPage() {
                     </td>
                     <td className="px-5 py-3.5 text-gray-500 text-xs">
                       {log.entityType}
+                    </td>
+                    <td className="px-5 py-3.5 text-gray-500 text-xs whitespace-nowrap">
+                      {(log.metadata as Record<string, unknown> | null)?.commissionRate != null
+                        ? `${(log.metadata as Record<string, unknown>).commissionRate}%`
+                        : <span className="text-gray-300">—</span>}
                     </td>
                     <td className="px-5 py-3.5">
                       <MetadataCell metadata={log.metadata as Record<string, unknown> | null} />

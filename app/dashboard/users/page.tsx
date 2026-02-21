@@ -21,8 +21,8 @@ interface User {
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
-const shortDate = (s: string) =>
-  new Date(s).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })
+const shortDateTime = (s: string) =>
+  new Date(s).toLocaleString("en-US", { month: "short", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit", timeZone: "Asia/Manila" })
 
 // ─── Create / Edit User Form ──────────────────────────────────────────────────
 
@@ -125,7 +125,7 @@ function UserModal({
               <label className="block text-sm font-medium text-gray-700 mb-1">First Name</label>
               <input
                 {...register("firstName")}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full bg-white border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
               />
               {errors.firstName && <p className="text-red-500 text-xs mt-1">{errors.firstName.message}</p>}
             </div>
@@ -133,7 +133,7 @@ function UserModal({
               <label className="block text-sm font-medium text-gray-700 mb-1">Last Name</label>
               <input
                 {...register("lastName")}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full bg-white border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
               />
               {errors.lastName && <p className="text-red-500 text-xs mt-1">{errors.lastName.message}</p>}
             </div>
@@ -144,7 +144,7 @@ function UserModal({
             <input
               {...register("email")}
               type="email"
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full bg-white border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
             />
             {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email.message}</p>}
           </div>
@@ -156,7 +156,7 @@ function UserModal({
                 {...register("password")}
                 type="password"
                 placeholder="Min. 8 characters"
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full bg-white border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
               />
               {errors.password && <p className="text-red-500 text-xs mt-1">{errors.password.message}</p>}
             </div>
@@ -167,7 +167,7 @@ function UserModal({
               <label className="block text-sm font-medium text-gray-700 mb-1">Role</label>
               <select
                 {...register("role")}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full bg-white border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
               >
                 <option value="RECRUITER">Recruiter</option>
                 <option value="ADMIN">Admin</option>
@@ -182,7 +182,7 @@ function UserModal({
                 max="100"
                 step="0.01"
                 placeholder="e.g. 15"
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full bg-white border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
               />
             </div>
           </div>
@@ -192,7 +192,7 @@ function UserModal({
               <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
               <select
                 {...register("status")}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full bg-white border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
               >
                 <option value="ACTIVE">Active</option>
                 <option value="INACTIVE">Inactive</option>
@@ -235,6 +235,7 @@ export default function UsersPage() {
   const [editingUser, setEditingUser] = useState<User | null>(null)
   const [showCreate, setShowCreate] = useState(false)
   const [deletingId, setDeletingId] = useState<string | null>(null)
+  const [togglingId, setTogglingId] = useState<string | null>(null)
   const [filter, setFilter] = useState<"all" | "recruiter" | "admin">("all")
 
   const { data: users, isLoading, isError } = useQuery<User[]>({
@@ -248,10 +249,24 @@ export default function UsersPage() {
     setShowCreate(false)
   }
 
-  const handleDeactivate = async (id: string) => {
-    if (!confirm("Deactivate this user?")) return
-    setDeletingId(id)
-    await fetch(`/api/users/${id}`, { method: "DELETE" })
+  const handleToggleStatus = async (user: User) => {
+    const next = user.status === "ACTIVE" ? "INACTIVE" : "ACTIVE"
+    const label = next === "INACTIVE" ? "Deactivate" : "Activate"
+    if (!confirm(`${label} ${user.firstName} ${user.lastName}?`)) return
+    setTogglingId(user.id)
+    await fetch(`/api/users/${user.id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ status: next }),
+    })
+    setTogglingId(null)
+    qc.invalidateQueries({ queryKey: ["users"] })
+  }
+
+  const handleDelete = async (user: User) => {
+    if (!confirm(`Permanently delete ${user.firstName} ${user.lastName}? This cannot be undone.`)) return
+    setDeletingId(user.id)
+    await fetch(`/api/users/${user.id}`, { method: "DELETE" })
     setDeletingId(null)
     qc.invalidateQueries({ queryKey: ["users"] })
   }
@@ -344,7 +359,7 @@ export default function UsersPage() {
                     <td className="px-5 py-3.5 text-right text-gray-600">
                       {user.commissionRate != null ? `${user.commissionRate}%` : "—"}
                     </td>
-                    <td className="px-5 py-3.5 text-gray-500">{shortDate(user.createdAt)}</td>
+                    <td className="px-5 py-3.5 text-gray-500 whitespace-nowrap">{shortDateTime(user.createdAt)}</td>
                     <td className="px-5 py-3.5">
                       <div className="flex items-center justify-end gap-3">
                         <button
@@ -353,15 +368,24 @@ export default function UsersPage() {
                         >
                           Edit
                         </button>
-                        {user.status === "ACTIVE" && (
-                          <button
-                            onClick={() => handleDeactivate(user.id)}
-                            disabled={deletingId === user.id}
-                            className="text-xs text-red-500 hover:text-red-700 font-medium disabled:opacity-50"
-                          >
-                            {deletingId === user.id ? "..." : "Deactivate"}
-                          </button>
-                        )}
+                        <button
+                          onClick={() => handleToggleStatus(user)}
+                          disabled={togglingId === user.id}
+                          className={`text-xs font-medium disabled:opacity-50 ${
+                            user.status === "ACTIVE"
+                              ? "text-yellow-600 hover:text-yellow-800"
+                              : "text-green-600 hover:text-green-800"
+                          }`}
+                        >
+                          {togglingId === user.id ? "..." : user.status === "ACTIVE" ? "Deactivate" : "Activate"}
+                        </button>
+                        <button
+                          onClick={() => handleDelete(user)}
+                          disabled={deletingId === user.id}
+                          className="text-xs text-red-500 hover:text-red-700 font-medium disabled:opacity-50"
+                        >
+                          {deletingId === user.id ? "..." : "Delete"}
+                        </button>
                       </div>
                     </td>
                   </tr>

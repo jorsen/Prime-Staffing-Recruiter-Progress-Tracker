@@ -78,7 +78,7 @@ export async function POST(request: Request) {
         action: "COMMISSION_CREATED",
         entityType: "Commission",
         entityId: commission.id,
-        metadata: { recruiterId, amount, loggedDate },
+        metadata: { recruiterName: `${recruiter.firstName} ${recruiter.lastName}`, amount, loggedDate, commissionRate: recruiter.commissionRate != null ? Number(recruiter.commissionRate) : null },
       },
     })
 

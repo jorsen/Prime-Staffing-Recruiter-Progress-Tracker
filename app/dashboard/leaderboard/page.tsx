@@ -26,7 +26,10 @@ const usd = (n: number) =>
   new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(n)
 
 const shortDate = (s: string) =>
-  new Date(s).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })
+  new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric", year: "numeric", timeZone: "UTC" }).format(new Date(s))
+
+const shortDateTime = (s: string) =>
+  new Date(s).toLocaleString("en-US", { month: "short", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit", timeZone: "Asia/Manila" })
 
 // ─── Commission Form ──────────────────────────────────────────────────────────
 
@@ -55,7 +58,10 @@ function LogCommissionModal({
     resolver: zodResolver(commissionSchema),
     defaultValues: {
       recruiterId: recruiter.id,
-      loggedDate: new Date().toISOString().split("T")[0],
+      loggedDate: (() => {
+        const d = new Date()
+        return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`
+      })(),
     },
   })
   const [serverError, setServerError] = useState<string | null>(null)
@@ -95,7 +101,7 @@ function LogCommissionModal({
               min="0.01"
               step="0.01"
               placeholder="5000"
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full bg-white border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
             />
             {errors.amount && <p className="text-red-500 text-xs mt-1">{errors.amount.message}</p>}
           </div>
@@ -104,7 +110,7 @@ function LogCommissionModal({
             <input
               {...register("loggedDate")}
               type="date"
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full bg-white border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
             />
             {errors.loggedDate && <p className="text-red-500 text-xs mt-1">{errors.loggedDate.message}</p>}
           </div>
@@ -114,7 +120,7 @@ function LogCommissionModal({
               {...register("notes")}
               type="text"
               placeholder="Placement, client name, etc."
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full bg-white border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
             />
           </div>
           {serverError && (
@@ -219,9 +225,9 @@ function RecruiterDetailModal({
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
-                {commissions.map((c: { id: string; loggedDate: string; amount: number; notes: string | null }) => (
+                {commissions.map((c: { id: string; createdAt: string; amount: number; notes: string | null }) => (
                   <tr key={c.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-3 text-gray-700">{shortDate(c.loggedDate)}</td>
+                    <td className="px-6 py-3 text-gray-700 whitespace-nowrap">{shortDateTime(c.createdAt)}</td>
                     <td className="px-6 py-3 text-right font-medium text-green-600">{usd(Number(c.amount))}</td>
                     <td className="px-6 py-3 text-gray-500">{c.notes ?? "—"}</td>
                   </tr>
@@ -297,7 +303,7 @@ export default function LeaderboardPage() {
         <select
           value={sortBy}
           onChange={(e) => setSortBy(e.target.value as SortBy)}
-          className="border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="bg-white border border-gray-300 rounded-lg px-3 py-1.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
         >
           <option value="earned">Sort: Highest Earned</option>
           <option value="pct">Sort: % Complete</option>
@@ -311,14 +317,14 @@ export default function LeaderboardPage() {
             type="date"
             value={periodStart}
             onChange={(e) => setPeriodStart(e.target.value)}
-            className="border border-gray-300 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="bg-white border border-gray-300 rounded-lg px-2 py-1.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
           />
           <span>—</span>
           <input
             type="date"
             value={periodEnd}
             onChange={(e) => setPeriodEnd(e.target.value)}
-            className="border border-gray-300 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="bg-white border border-gray-300 rounded-lg px-2 py-1.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
           />
           {(periodStart || periodEnd) && (
             <button

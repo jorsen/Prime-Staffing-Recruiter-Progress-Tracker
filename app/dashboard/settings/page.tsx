@@ -24,6 +24,7 @@ export default function SettingsPage() {
   const [success, setSuccess] = useState(false)
   const [serverError, setServerError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
+  const [showPasswords, setShowPasswords] = useState(false)
 
   const {
     register,
@@ -91,7 +92,16 @@ export default function SettingsPage() {
 
       {/* Change password */}
       <div className="bg-white rounded-xl border border-gray-200 p-5">
-        <h2 className="text-sm font-semibold text-gray-900 mb-4">Change Password</h2>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-sm font-semibold text-gray-900">Change Password</h2>
+          <button
+            type="button"
+            onClick={() => setShowPasswords(!showPasswords)}
+            className="text-xs text-gray-400 hover:text-gray-600 font-medium"
+          >
+            {showPasswords ? "Hide passwords" : "Show passwords"}
+          </button>
+        </div>
 
         {success && (
           <div className="mb-4 bg-green-50 border border-green-200 rounded-lg px-3 py-2">
@@ -104,9 +114,9 @@ export default function SettingsPage() {
             <label className="block text-sm font-medium text-gray-700 mb-1">Current Password</label>
             <input
               {...register("currentPassword")}
-              type="password"
+              type={showPasswords ? "text" : "password"}
               autoComplete="current-password"
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full bg-white border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
             />
             {errors.currentPassword && (
               <p className="text-red-500 text-xs mt-1">{errors.currentPassword.message}</p>
@@ -117,10 +127,10 @@ export default function SettingsPage() {
             <label className="block text-sm font-medium text-gray-700 mb-1">New Password</label>
             <input
               {...register("newPassword")}
-              type="password"
+              type={showPasswords ? "text" : "password"}
               autoComplete="new-password"
               placeholder="Min. 8 characters"
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full bg-white border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
             />
             {errors.newPassword && (
               <p className="text-red-500 text-xs mt-1">{errors.newPassword.message}</p>
@@ -131,9 +141,9 @@ export default function SettingsPage() {
             <label className="block text-sm font-medium text-gray-700 mb-1">Confirm New Password</label>
             <input
               {...register("confirmPassword")}
-              type="password"
+              type={showPasswords ? "text" : "password"}
               autoComplete="new-password"
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full bg-white border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
             />
             {errors.confirmPassword && (
               <p className="text-red-500 text-xs mt-1">{errors.confirmPassword.message}</p>

@@ -3,6 +3,7 @@ import { auth } from "@/auth"
 import { prisma } from "@/lib/prisma"
 import { z } from "zod"
 import bcryptjs from "bcryptjs"
+import { sendWelcomeEmail } from "@/lib/email"
 
 const createUserSchema = z.object({
   email: z.string().email("Invalid email"),
@@ -67,6 +68,11 @@ export async function POST(request: Request) {
       },
       select: { id: true, email: true, firstName: true, lastName: true, role: true, status: true, commissionRate: true },
     })
+
+    // Send welcome email (non-blocking — don't fail the request if email fails)
+    sendWelcomeEmail({ to: email, firstName, password }).catch((err) =>
+      console.error("Welcome email failed:", err)
+    )
 
     return NextResponse.json(
       { ...user, commissionRate: user.commissionRate ? Number(user.commissionRate) : null },

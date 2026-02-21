@@ -32,6 +32,9 @@ export async function POST(request: Request) {
   const session = await auth()
   if (!session?.user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
 
+  const userId = session.user.id
+  if (!userId) return NextResponse.json({ error: "Session missing user ID" }, { status: 401 })
+
   try {
     const body = await request.json()
     const parsed = createGoalSchema.safeParse(body)
@@ -51,7 +54,7 @@ export async function POST(request: Request) {
 
     const existingActiveGoal = await prisma.goal.findFirst({
       where: {
-        recruiterId: session.user.id,
+        recruiterId: userId,
         deletedAt: null,
         periodEnd: { gte: new Date() },
       },
@@ -65,8 +68,8 @@ export async function POST(request: Request) {
 
     const goal = await prisma.goal.create({
       data: {
-        recruiterId: session.user.id,
-        amount,
+        recruiterId: userId,
+        amount: amount.toString(),
         periodStart: start,
         periodEnd: end,
       },
@@ -74,7 +77,7 @@ export async function POST(request: Request) {
 
     await prisma.auditLog.create({
       data: {
-        actorId: session.user.id,
+        actorId: userId,
         action: "GOAL_CREATED",
         entityType: "Goal",
         entityId: goal.id,
@@ -84,7 +87,8 @@ export async function POST(request: Request) {
 
     return NextResponse.json(goal, { status: 201 })
   } catch (error) {
-    console.error(error)
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 })
+    const msg = error instanceof Error ? error.message : String(error)
+    console.error("[POST /api/goals]", msg)
+    return NextResponse.json({ error: msg }, { status: 500 })
   }
 }

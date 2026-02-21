@@ -15,6 +15,7 @@ export async function DELETE(
   try {
     const commission = await prisma.commission.findUnique({
       where: { id, deletedAt: null },
+      include: { recruiter: { select: { firstName: true, lastName: true, commissionRate: true } } },
     })
     if (!commission) return NextResponse.json({ error: "Not found" }, { status: 404 })
 
@@ -29,7 +30,11 @@ export async function DELETE(
         action: "COMMISSION_DELETED",
         entityType: "Commission",
         entityId: id,
-        metadata: { amount: Number(commission.amount), recruiterId: commission.recruiterId },
+        metadata: {
+          recruiterName: `${commission.recruiter.firstName} ${commission.recruiter.lastName}`,
+          amount: Number(commission.amount),
+          commissionRate: commission.recruiter.commissionRate != null ? Number(commission.recruiter.commissionRate) : null,
+        },
       },
     })
 
