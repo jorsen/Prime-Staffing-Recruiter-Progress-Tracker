@@ -69,6 +69,16 @@ export async function POST(request: Request) {
       select: { id: true, email: true, firstName: true, lastName: true, role: true, status: true, commissionRate: true },
     })
 
+    await prisma.auditLog.create({
+      data: {
+        actorId: session.user.id,
+        action: "USER_CREATED",
+        entityType: "User",
+        entityId: user.id,
+        metadata: { name: `${firstName} ${lastName}`, email, role },
+      },
+    })
+
     // Send welcome email (non-blocking — don't fail the request if email fails)
     sendWelcomeEmail({ to: email, firstName, password }).catch((err) =>
       console.error("Welcome email failed:", err)

@@ -9,6 +9,7 @@ type AuditAction =
   | "COMMISSION_CREATED"
   | "COMMISSION_DELETED"
   | "GOAL_CREATED"
+  | "USER_CREATED"
   | "USER_STATUS_CHANGED"
 
 interface AuditLog {
@@ -37,6 +38,7 @@ const ACTION_LABELS: Record<AuditAction, string> = {
   COMMISSION_CREATED: "Commission Logged",
   COMMISSION_DELETED: "Commission Deleted",
   GOAL_CREATED: "Goal Created",
+  USER_CREATED: "User Created",
   USER_STATUS_CHANGED: "User Status Changed",
 }
 
@@ -44,6 +46,7 @@ const ACTION_STYLES: Record<AuditAction, string> = {
   COMMISSION_CREATED: "bg-green-100 text-green-700",
   COMMISSION_DELETED: "bg-red-100 text-red-700",
   GOAL_CREATED: "bg-blue-100 text-blue-700",
+  USER_CREATED: "bg-purple-100 text-purple-700",
   USER_STATUS_CHANGED: "bg-yellow-100 text-yellow-700",
 }
 
@@ -58,6 +61,9 @@ function MetadataCell({ metadata }: { metadata: Record<string, unknown> | null }
   const parts: string[] = []
   if (metadata.amount != null) parts.push(`$${Number(metadata.amount).toLocaleString()}`)
   if (metadata.recruiterName) parts.push(`for ${String(metadata.recruiterName)}`)
+  if (metadata.name) parts.push(String(metadata.name))
+  if (metadata.email) parts.push(String(metadata.email))
+  if (metadata.role) parts.push(String(metadata.role))
   if (metadata.oldStatus != null && metadata.newStatus != null) {
     const from = STATUS_LABELS[String(metadata.oldStatus)] ?? String(metadata.oldStatus)
     const to = STATUS_LABELS[String(metadata.newStatus)] ?? String(metadata.newStatus)
@@ -74,6 +80,7 @@ const ACTION_OPTIONS: { value: string; label: string }[] = [
   { value: "COMMISSION_CREATED", label: "Commission Logged" },
   { value: "COMMISSION_DELETED", label: "Commission Deleted" },
   { value: "GOAL_CREATED", label: "Goal Created" },
+  { value: "USER_CREATED", label: "User Created" },
   { value: "USER_STATUS_CHANGED", label: "User Status Changed" },
 ]
 
