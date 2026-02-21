@@ -14,7 +14,7 @@ export async function sendWelcomeEmail({
   firstName: string
   password: string
 }) {
-  await resend.emails.send({
+  const result = await resend.emails.send({
     from: FROM,
     to,
     subject: "Welcome to Prime Staffing — your account is ready",
@@ -73,4 +73,5 @@ export async function sendWelcomeEmail({
 </html>
     `,
   })
+  console.log("[email] sendWelcomeEmail result:", JSON.stringify(result))
 }
