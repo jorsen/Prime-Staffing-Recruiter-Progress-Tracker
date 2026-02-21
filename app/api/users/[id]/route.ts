@@ -62,6 +62,12 @@ export async function PATCH(
     const existing = await prisma.user.findUnique({ where: { id, deletedAt: null } })
     if (!existing) return NextResponse.json({ error: "Not found" }, { status: 404 })
 
+    // Check for duplicate email if email is being changed
+    if (parsed.data.email && parsed.data.email !== existing.email) {
+      const emailTaken = await prisma.user.findUnique({ where: { email: parsed.data.email } })
+      if (emailTaken) return NextResponse.json({ error: "Email already in use" }, { status: 409 })
+    }
+
     const statusChanged = parsed.data.status && parsed.data.status !== existing.status
 
     const user = await prisma.user.update({

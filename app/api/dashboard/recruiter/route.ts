@@ -21,7 +21,7 @@ export async function GET(request: Request) {
     }),
   ])
 
-  const commissionRate = recruiter?.commissionRate != null ? Number(recruiter.commissionRate) : 100
+  const commissionRate = recruiter?.commissionRate != null ? Number(recruiter.commissionRate) : 0
 
   if (goals.length === 0) {
     return NextResponse.json({ hasGoal: false, goals: [], activeGoal: null, stats: null, commissions: [], commissionRate })

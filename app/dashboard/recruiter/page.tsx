@@ -56,7 +56,7 @@ const usd = (n: number) =>
   new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(n)
 
 const shortDate = (s: string) =>
-  new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric", year: "numeric", timeZone: "UTC" }).format(new Date(s))
+  new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric", year: "numeric", timeZone: "Asia/Manila" }).format(new Date(s))
 
 const shortDateTime = (s: string) =>
   new Date(s).toLocaleString("en-US", { month: "short", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit", timeZone: "Asia/Manila" })
@@ -64,7 +64,7 @@ const shortDateTime = (s: string) =>
 function groupByMonth(commissions: Commission[]) {
   const map: Record<string, number> = {}
   for (const c of commissions) {
-    const key = new Intl.DateTimeFormat("en-US", { month: "short", year: "2-digit", timeZone: "UTC" }).format(new Date(c.loggedDate))
+    const key = new Intl.DateTimeFormat("en-US", { month: "short", year: "2-digit", timeZone: "Asia/Manila" }).format(new Date(c.loggedDate))
     map[key] = (map[key] ?? 0) + Number(c.amount)
   }
   return Object.entries(map)

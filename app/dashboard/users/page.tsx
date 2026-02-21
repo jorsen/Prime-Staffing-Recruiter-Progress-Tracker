@@ -234,7 +234,6 @@ export default function UsersPage() {
   const qc = useQueryClient()
   const [editingUser, setEditingUser] = useState<User | null>(null)
   const [showCreate, setShowCreate] = useState(false)
-  const [deletingId, setDeletingId] = useState<string | null>(null)
   const [togglingId, setTogglingId] = useState<string | null>(null)
   const [filter, setFilter] = useState<"all" | "recruiter" | "admin">("all")
 
@@ -260,14 +259,6 @@ export default function UsersPage() {
       body: JSON.stringify({ status: next }),
     })
     setTogglingId(null)
-    qc.invalidateQueries({ queryKey: ["users"] })
-  }
-
-  const handleDelete = async (user: User) => {
-    if (!confirm(`Permanently delete ${user.firstName} ${user.lastName}? This cannot be undone.`)) return
-    setDeletingId(user.id)
-    await fetch(`/api/users/${user.id}`, { method: "DELETE" })
-    setDeletingId(null)
     qc.invalidateQueries({ queryKey: ["users"] })
   }
 
@@ -378,13 +369,6 @@ export default function UsersPage() {
                           }`}
                         >
                           {togglingId === user.id ? "..." : user.status === "ACTIVE" ? "Deactivate" : "Activate"}
-                        </button>
-                        <button
-                          onClick={() => handleDelete(user)}
-                          disabled={deletingId === user.id}
-                          className="text-xs text-red-500 hover:text-red-700 font-medium disabled:opacity-50"
-                        >
-                          {deletingId === user.id ? "..." : "Delete"}
                         </button>
                       </div>
                     </td>

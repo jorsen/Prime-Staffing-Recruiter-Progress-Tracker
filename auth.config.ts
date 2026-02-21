@@ -26,7 +26,8 @@ export const authConfig: NextAuthConfig = {
       const isDashboard = nextUrl.pathname.startsWith("/dashboard")
       const isAdminRoute =
         nextUrl.pathname.startsWith("/dashboard/leaderboard") ||
-        nextUrl.pathname.startsWith("/dashboard/users")
+        nextUrl.pathname.startsWith("/dashboard/users") ||
+        nextUrl.pathname.startsWith("/dashboard/audit-logs")
 
       if (!isLoggedIn && isDashboard) return false
       if (isLoggedIn && isLoginPage) return Response.redirect(
