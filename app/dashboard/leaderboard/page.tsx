@@ -221,18 +221,33 @@ function RecruiterDetailModal({
                 <tr>
                   <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase">Date</th>
                   <th className="text-right px-6 py-3 text-xs font-medium text-gray-500 uppercase">Amount</th>
+                  <th className="text-right px-6 py-3 text-xs font-medium text-gray-500 uppercase">Rate</th>
+                  <th className="text-right px-6 py-3 text-xs font-medium text-gray-500 uppercase">Earned</th>
                   <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase">Notes</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
-                {commissions.map((c: { id: string; createdAt: string; amount: number; notes: string | null }) => (
-                  <tr key={c.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-3 text-gray-700 whitespace-nowrap">{shortDateTime(c.createdAt)}</td>
-                    <td className="px-6 py-3 text-right font-medium text-green-600">{usd(Number(c.amount))}</td>
-                    <td className="px-6 py-3 text-gray-500">{c.notes ?? "—"}</td>
-                  </tr>
-                ))}
+                {commissions.map((c: { id: string; createdAt: string; amount: number; notes: string | null }) => {
+                  const rate = recruiter.commissionRate ?? 0
+                  const earned = Number(c.amount) * (rate / 100)
+                  return (
+                    <tr key={c.id} className="hover:bg-gray-50">
+                      <td className="px-6 py-3 text-gray-700 whitespace-nowrap">{shortDateTime(c.createdAt)}</td>
+                      <td className="px-6 py-3 text-right text-gray-600">{usd(Number(c.amount))}</td>
+                      <td className="px-6 py-3 text-right text-gray-400 text-xs">{rate}%</td>
+                      <td className="px-6 py-3 text-right font-medium text-green-600">{usd(earned)}</td>
+                      <td className="px-6 py-3 text-gray-500">{c.notes ?? "—"}</td>
+                    </tr>
+                  )
+                })}
               </tbody>
+              <tfoot className="border-t-2 border-gray-200 bg-gray-50">
+                <tr>
+                  <td className="px-6 py-3 text-xs font-semibold text-gray-500 uppercase" colSpan={3}>Total Earned</td>
+                  <td className="px-6 py-3 text-right font-bold text-gray-900">{usd(recruiter.totalEarned)}</td>
+                  <td />
+                </tr>
+              </tfoot>
             </table>
           )}
         </div>
