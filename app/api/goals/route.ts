@@ -16,7 +16,7 @@ export async function GET(request: Request) {
   const { searchParams } = new URL(request.url)
   const recruiterId = searchParams.get("recruiterId") ?? session.user.id
 
-  if (session.user.role !== "ADMIN" && recruiterId !== session.user.id) {
+  if (session.user.role !== "ADMIN" && session.user.role !== "SUPERADMIN" && recruiterId !== session.user.id) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 })
   }
 

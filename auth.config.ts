@@ -32,13 +32,13 @@ export const authConfig: NextAuthConfig = {
       if (!isLoggedIn && isDashboard) return false
       if (isLoggedIn && isLoginPage) return Response.redirect(
         new URL(
-          auth?.user?.role === "ADMIN"
+          auth?.user?.role === "ADMIN" || auth?.user?.role === "SUPERADMIN"
             ? "/dashboard/leaderboard"
             : "/dashboard/recruiter",
           nextUrl
         )
       )
-      if (isAdminRoute && auth?.user?.role !== "ADMIN") return Response.redirect(
+      if (isAdminRoute && auth?.user?.role !== "ADMIN" && auth?.user?.role !== "SUPERADMIN") return Response.redirect(
         new URL("/dashboard/recruiter", nextUrl)
       )
 

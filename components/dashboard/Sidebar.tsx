@@ -24,7 +24,8 @@ const recruiterNav = [
 
 function SidebarContent({ user, onClose }: { user: SidebarProps["user"]; onClose: () => void }) {
   const pathname = usePathname()
-  const isAdmin = user.role === "ADMIN"
+  const isAdmin = user.role === "ADMIN" || user.role === "SUPERADMIN"
+  const isSuperAdmin = user.role === "SUPERADMIN"
   const navItems = isAdmin ? adminNav : recruiterNav
 
   return (
@@ -34,10 +35,14 @@ function SidebarContent({ user, onClose }: { user: SidebarProps["user"]; onClose
         <p className="text-sm font-medium text-gray-900 truncate">{user.name}</p>
         <span
           className={`inline-block mt-1.5 text-xs px-2 py-0.5 rounded-full font-medium ${
-            isAdmin ? "bg-purple-100 text-purple-700" : "bg-blue-100 text-blue-700"
+            isSuperAdmin
+              ? "bg-orange-100 text-orange-700"
+              : isAdmin
+              ? "bg-purple-100 text-purple-700"
+              : "bg-blue-100 text-blue-700"
           }`}
         >
-          {isAdmin ? "Admin" : "Recruiter"}
+          {isSuperAdmin ? "Super Admin" : isAdmin ? "Admin" : "Recruiter"}
         </span>
       </div>
 

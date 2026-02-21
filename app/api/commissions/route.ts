@@ -19,7 +19,8 @@ export async function GET(request: Request) {
   const from = searchParams.get("from")
   const to = searchParams.get("to")
 
-  if (session.user.role !== "ADMIN" && recruiterId !== session.user.id) {
+  const isAdmin = session.user.role === "ADMIN" || session.user.role === "SUPERADMIN"
+  if (!isAdmin && recruiterId !== session.user.id) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 })
   }
 
@@ -48,7 +49,7 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   const session = await auth()
   if (!session?.user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-  if (session.user.role !== "ADMIN") return NextResponse.json({ error: "Forbidden" }, { status: 403 })
+  if (session.user.role !== "ADMIN" && session.user.role !== "SUPERADMIN") return NextResponse.json({ error: "Forbidden" }, { status: 403 })
 
   try {
     const body = await request.json()

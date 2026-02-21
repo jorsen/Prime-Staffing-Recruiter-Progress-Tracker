@@ -79,12 +79,18 @@ export default function SettingsPage() {
             <span className="text-gray-500">Role</span>
             <span
               className={`text-xs px-2 py-0.5 rounded-full font-medium ${
-                session?.user?.role === "ADMIN"
+                session?.user?.role === "SUPERADMIN"
+                  ? "bg-orange-100 text-orange-700"
+                  : session?.user?.role === "ADMIN"
                   ? "bg-purple-100 text-purple-700"
                   : "bg-blue-100 text-blue-700"
               }`}
             >
-              {session?.user?.role === "ADMIN" ? "Admin" : "Recruiter"}
+              {session?.user?.role === "SUPERADMIN"
+                ? "Super Admin"
+                : session?.user?.role === "ADMIN"
+                ? "Admin"
+                : "Recruiter"}
             </span>
           </div>
         </div>

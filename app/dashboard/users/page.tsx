@@ -1,6 +1,7 @@
 "use client"
 
 import { useQuery, useQueryClient } from "@tanstack/react-query"
+import { useSession } from "next-auth/react"
 import { useState } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -232,9 +233,12 @@ function UserModal({
 
 export default function UsersPage() {
   const qc = useQueryClient()
+  const { data: session } = useSession()
+  const isSuperAdmin = session?.user?.role === "SUPERADMIN"
   const [editingUser, setEditingUser] = useState<User | null>(null)
   const [showCreate, setShowCreate] = useState(false)
   const [togglingId, setTogglingId] = useState<string | null>(null)
+  const [deletingId, setDeletingId] = useState<string | null>(null)
   const [filter, setFilter] = useState<"all" | "recruiter" | "admin">("all")
 
   const { data: users, isLoading, isError } = useQuery<User[]>({
@@ -259,6 +263,14 @@ export default function UsersPage() {
       body: JSON.stringify({ status: next }),
     })
     setTogglingId(null)
+    qc.invalidateQueries({ queryKey: ["users"] })
+  }
+
+  const handleDelete = async (user: User) => {
+    if (!confirm(`Permanently delete ${user.firstName} ${user.lastName}? This cannot be undone.`)) return
+    setDeletingId(user.id)
+    await fetch(`/api/users/${user.id}`, { method: "DELETE" })
+    setDeletingId(null)
     qc.invalidateQueries({ queryKey: ["users"] })
   }
 
@@ -370,6 +382,15 @@ export default function UsersPage() {
                         >
                           {togglingId === user.id ? "..." : user.status === "ACTIVE" ? "Deactivate" : "Activate"}
                         </button>
+                        {isSuperAdmin && (
+                          <button
+                            onClick={() => handleDelete(user)}
+                            disabled={deletingId === user.id}
+                            className="text-xs text-red-500 hover:text-red-700 font-medium disabled:opacity-50"
+                          >
+                            {deletingId === user.id ? "..." : "Delete"}
+                          </button>
+                        )}
                       </div>
                     </td>
                   </tr>
