@@ -22,7 +22,7 @@ function makeUser(id: string, name: string, goalAmount: number, earned: number) 
     lastName: name.split(" ")[1] ?? "X",
     email: `${id}@test.com`,
     status: "ACTIVE",
-    commissionRate: null,
+    commissionRate: { toString: () => "100" },
     goals: goalAmount > 0
       ? [{ id: `g-${id}`, amount: { toString: () => String(goalAmount) }, periodStart: new Date(), periodEnd: new Date() }]
       : [],
